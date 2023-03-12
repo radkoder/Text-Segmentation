@@ -1,3 +1,10 @@
+# Dataset files - downloaded separately
+*.tar.bz2
+*.npz
+
+# VSCode
+.vscode/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
