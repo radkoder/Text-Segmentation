@@ -1,6 +1,8 @@
 # Dataset files - downloaded separately
 *.tar.bz2
 *.npz
+*.zip
+
 
 # VSCode
 .vscode/

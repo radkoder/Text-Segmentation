@@ -23,5 +23,5 @@ def main():
             print(f"Unknown dataset: {dataset}")
             exit(-1)
 
-if __name__ == '__name__':
+if __name__ == '__main__':
     main()

@@ -77,6 +77,8 @@ def zipped(name):
         return None
 
 def zipped_members(fileobj):
+    if utils.has_method(fileobj, 'getmembers'):
+        return fileobj.getmembers()
     if utils.has_method(fileobj, 'namelist'):
         return fileobj.namelist()
     elif utils.has_method(fileobj, 'getnames'):

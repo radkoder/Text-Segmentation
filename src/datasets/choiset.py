@@ -1,12 +1,11 @@
 NOT_FOUND_MSG = '''
-    Wiki_727K dataset not found!
-    Make sure the files:
-    * wiki_727K.tar.bz2
-    * wiki_test_50.tar.bz2
+    Choi dataset not found!
+    Make sure the file:
+    * Choi-3-11.zip
 
-    Are placed in the /data folder in root directory
+    Is placed in the /data folder in root directory
     The download link used to aquire the dataset is: (may not be working at the time of reading)
-    https://www.dropbox.com/sh/k3jh0fjbyr0gw0a/AADzAd9SDTrBnvs1qLCJY5cza?dl=0
+    https://github.com/logological/C99/tree/master/data/3/3-11
     '''
 from datasets import DATASET_DIR, TMP_DIR
 from common import files, stage
@@ -19,32 +18,29 @@ from models import sentence_bert as sbert
 def get(variant = None):
     if not check():
         return None
-    elif variant == 'full':
-        return os.path.abspath(os.path.join(DATASET_DIR,'wiki_727K.tar.bz2'))
-    else: return os.path.abspath( os.path.join(DATASET_DIR,'wiki_test_50.tar.bz2'))
+    else:
+        return os.path.abspath(os.path.join(DATASET_DIR,'Choi-3-11.zip'))
+   
 
 def check():
-    bigdataset = os.path.abspath(os.path.join(DATASET_DIR,'wiki_727K.tar.bz2'))
-    smallset =os.path.abspath( os.path.join(DATASET_DIR,'wiki_test_50.tar.bz2'))
-
-    b_found = os.path.isfile(bigdataset)
-    s_found = os.path.isfile(smallset)
-
-    print(f'{bigdataset} found: {b_found}')
-    print(f'{smallset} found: {s_found}')
-    if not (b_found and s_found):
+    ds = os.path.abspath(os.path.join(DATASET_DIR,'Choi-3-11.zip'))
+    b_found = os.path.isfile(ds)
+    print(f'{ds} found: {b_found}')
+    if not b_found:
         print(NOT_FOUND_MSG)
-    return b_found or s_found
+    return b_found
 
 def get_raw_lines(dsfile, filename):
     with files.zipped(dsfile) as wiki_ds:
-        members = [m.name for m in wiki_ds.getmembers() if m.isfile()]
+        members = [m for m in wiki_ds.infolist() if not m.is_dir()]
         print(members)
         if filename not in members:
             print(f'File {filename} not found in archive {dsfile}')
             return None
         else:
-            return [l.decode('utf-8') for l in wiki_ds.extractfile(filename).readlines()]
+            with dsfile.open(filename) as reader:
+                lines = [l.decode('utf-8') for l in reader.readlines()] # decode lines
+            return lines
 
 def get_unsegmented_lines(dsfile, filename):
     return [l for l in get_raw_lines(dsfile,filename) if not l.startswith('===') and not l.startswith('***')]
@@ -54,27 +50,22 @@ def get_unsegmented_lines(dsfile, filename):
 def make_embeddings(infile, outfile, embedder = 'trans'):
     sentence_bert = sbert.get(embedder)
     with files.zipped(infile) as wiki_ds:
-        members = [m for m in wiki_ds.getmembers() if m.isfile()]
+        members = [m for m in wiki_ds.infolist() if not m.is_dir()]
         bar = stage.ProgressBar("Embedding sentences",len(members))
         for name in members:
-            bar.update(name.name)
-            reader = wiki_ds.extractfile(name)
-            lines = [l.decode('utf-8') for l in reader.readlines()] # decode lines
+            bar.update(name.filename)
+            with wiki_ds.open(name) as reader:
+                lines = [l.decode('utf-8') for l in reader.readlines()] # decode lines
             lines = [l for l in lines if not l.startswith('***')] # filter special makers
             sentences = [l for l in lines if not l.startswith('===')]
             div_i = np.array([i for i,line in enumerate(lines) if line.startswith('===')] + [len(lines)])
             div_t = np.repeat(np.arange(len(div_i)-1),np.diff(div_i)-1)
             embeddings = sentence_bert(sentences)
             assert len(div_t) == len(embeddings), f'{len(div_t)} != {len(embeddings)}'
-            np.save(files.file(TMP_DIR+'/'+name.name+'_seg.npy','wb'),div_t)
-            np.save(files.file(TMP_DIR+'/'+name.name+'_emb.npy','wb'),embeddings)
+            np.save(files.file(TMP_DIR+'/'+name.filename+'_seg.npy','wb'),div_t)
+            np.save(files.file(TMP_DIR+'/'+name.filename+'_emb.npy','wb'),embeddings)
             #print(f'{name.name} : {div_i} : {len(sentences)} = {len(div_t)} : {embeddings.shape}')
         bar.end()
     shutil.make_archive(outfile,'zip',root_dir=TMP_DIR,base_dir='.')
     os.replace(outfile+'.zip',outfile+'.npz')
     shutil.rmtree(TMP_DIR)
-
-
-    
-
-

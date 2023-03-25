@@ -1,22 +1,26 @@
 from nltk.metrics.segmentation import pk, windowdiff
 from datasets import EmbeddedDataset
-import segments
+from algorithms import segments
 import numpy as np
+from common import stage
 
 def evaluate_document(true,infered,k):
     ref = segments.array_to_nltk(true)
     hyp = segments.array_to_nltk(infered)
     return pk(ref,hyp,k) ,windowdiff(ref,hyp,k)
-
+@stage.measure("Evaluating segmenter")
 def evaluate_segmenter(dataset : EmbeddedDataset, seg_alg, k = None):
     Ps,Ws = [],[]
+    bar = stage.ProgressBar("Evaluating",len(dataset.get_embeddings()))
     for emb in dataset.get_embeddings(): 
-            seg =  dataset.segmentation(emb)
-            inferred = seg_alg(dataset[emb])
-            seg_true = segments.tags_to_array(dataset[seg])
-            p,w = evaluate_document(seg_true,inferred,k)
-            Ps.append(p)
-            Ws.append(w)
+        bar.update(emb)
+        seg =  dataset.segmentation(emb)
+        inferred = seg_alg(dataset[emb])
+        seg_true = segments.tags_to_array(dataset[seg])
+        p,w = evaluate_document(seg_true,inferred,k)
+        Ps.append(p)
+        Ws.append(w)
+    bar.end()
     print(f'Pmean: {np.mean(Ps)} Pstv: {np.std(Ps)}')
     print(f'Wmean: {np.mean(Ws)} Wstv: {np.std(Ws)}')
     return Ps, Ws

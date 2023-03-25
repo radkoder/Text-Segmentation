@@ -3,6 +3,7 @@ DATASET_DIR = os.path.abspath('../data')
 TMP_DIR = DATASET_DIR+'/tmp'
 __all__ = ["wikiset"]
 import numpy as np
+from common import utils
 
 class EmbeddedDataset(object):
     def __init__(self, filename):
@@ -13,7 +14,17 @@ class EmbeddedDataset(object):
     def __exit__(self,exc_type, exc_value, traceback):
         self.file.close()
     def __getitem__(self, key):
-        return self.file[key]
+        if isinstance(key, str):
+            return self.file[key]
+        elif utils.has_method(key,'__getitem__'):
+            return [self.file[k] for k in key]
+        else:
+            return None
+    def open(self):
+        self.file = np.load(self.filename, mmap_mode='r')
+
+    def close(self):
+        self.file.close()
     def get_members(self):
         return self.file.files
     def document_lengths(self):

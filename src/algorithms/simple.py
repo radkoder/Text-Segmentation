@@ -24,4 +24,4 @@ def simple_seg(emb):
     return np.array([np.eye(1,len(emb),i) for i in divs_i],dtype=int).sum(0)[0]
 
 
-# Graph seg
+
