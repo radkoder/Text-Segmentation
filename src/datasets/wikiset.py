@@ -39,7 +39,6 @@ def check():
 def get_raw_lines(dsfile, filename):
     with files.zipped(dsfile) as wiki_ds:
         members = [m.name for m in wiki_ds.getmembers() if m.isfile()]
-        print(members)
         if filename not in members:
             print(f'File {filename} not found in archive {dsfile}')
             return None
@@ -51,10 +50,13 @@ def get_unsegmented_lines(dsfile, filename):
 
 
 @stage.measure("Making sentence embeddings")
-def make_embeddings(infile, outfile, embedder = 'trans'):
+def make_embeddings(infile, outfile, embedder = 'trans', trunc = None):
     sentence_bert = sbert.get(embedder)
     with files.zipped(infile) as wiki_ds:
-        members = [m for m in wiki_ds.getmembers() if m.isfile()]
+        if trunc == None:
+            members = [m for m in wiki_ds.getmembers() if m.isfile()]
+        else:
+            members = [m for m in wiki_ds.getmembers()[:trunc] if m.isfile()]
         bar = stage.ProgressBar("Embedding sentences",len(members))
         for name in members:
             bar.update(name.name)
