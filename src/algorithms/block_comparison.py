@@ -5,6 +5,8 @@ def encode_blocks(v, mode = 'max'):
         return np.max(v,2)
     elif mode == 'mean':
         return np.array([u/np.sqrt(u.dot(u.T)) for u in np.sum(v,2)])
+    elif mode == 'sum':
+        return np.sum(v,2)
     else:
         print(f"Unknown mode: {mode}")
         return None
@@ -16,13 +18,19 @@ def similarity_measure(v1,v2, mode = 'dot'):
     elif mode == 'acos':
         # linear similarity
         return np.pi - np.arccos(v1.dot(v2)/np.sqrt(v1.dot(v1) * v2.dot(v2)))
+    elif mode == 'max-abs-diff':
+        return -np.max(np.abs(v1-v2))
+def sub_mean(Vs):
+    s = np.sum(Vs,0)
+    s /= np.sqrt(s.dot(s.T))
+    return Vs - s
 
-
-def main(emb,threshold = None, block_size = None, block_mode = 'max', whiten = False, cmp_mode ='dot'):
+def main(emb,threshold = None, block_size = None, block_mode = 'max', whiten = False, cmp_mode ='dot', substract_mean = False):
     if block_size is None: BS = 3
     else : BS = min(block_size,len(emb)//3)
 
     v = vq.whiten(emb,check_finite=False) if whiten else emb
+    v = sub_mean(v) if substract_mean else v
     v = np.lib.stride_tricks.sliding_window_view(v,BS,0)
     v = encode_blocks(v,block_mode)
     

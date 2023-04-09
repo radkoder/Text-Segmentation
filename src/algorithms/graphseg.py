@@ -1,4 +1,5 @@
 
+from networkx.algorithms import approximation
 from networkx.algorithms import clique
 import networkx as nx
 from . import segments
@@ -28,11 +29,16 @@ def merge_small_seg(segs,emb_mat,min_n):
             else:
                 return merged_seg(segs,i-1,i)
 
-def sbert_graphseg(emb,threshold = 0.5,n_min_seg = 3):
+def sbert_graphseg(emb,threshold = 0.5,n_min_seg = 3, clique_finder = 'precise'):
     mat = np.inner(emb,emb)
     adj = np.array(mat > threshold,dtype=int)
     G = nx.Graph(adj)
-    cliques =  list(clique.find_cliques(G))
+    if clique_finder == 'precise':
+        cliques  = clique.find_cliques(G)
+    elif clique_finder == 'clique_removal':
+        _,cliques =  approximation.clique.clique_removal(G)
+    
+    cliques = list(cliques)
     segs = []
 
     #segments from cliques
@@ -69,5 +75,5 @@ def sbert_graphseg(emb,threshold = 0.5,n_min_seg = 3):
         seg_tags += [i]*len(segs[i])
     return segments.tags_to_array(seg_tags)
 
-def with_params(threshold, n_min_seg):
-    return lambda x : sbert_graphseg(x,threshold,n_min_seg)
+def with_params(**kwargs):
+    return lambda x : sbert_graphseg(x,**kwargs)
