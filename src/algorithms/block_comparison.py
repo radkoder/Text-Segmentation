@@ -20,6 +20,8 @@ def similarity_measure(v1,v2, mode = 'dot'):
         return np.pi - np.arccos(v1.dot(v2)/np.sqrt(v1.dot(v1) * v2.dot(v2)))
     elif mode == 'max-abs-diff':
         return -np.max(np.abs(v1-v2))
+    elif mode == 'sum-diff':
+        return -np.max(np.abs(v1-v2))
 def sub_mean(Vs):
     s = np.sum(Vs,0)
     s /= np.sqrt(s.dot(s.T))

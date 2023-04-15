@@ -21,6 +21,10 @@ def get(variant = None):
         return None
     elif variant == 'full':
         return os.path.abspath(os.path.join(DATASET_DIR,'wiki_727K.tar.bz2'))
+    elif variant == 'dev':
+        return os.path.abspath(os.path.join(DATASET_DIR,'wiki_dev.zip'))
+    elif variant == 'test':
+       return os.path.abspath(os.path.join(DATASET_DIR,'wiki_test.zip'))
     else: return os.path.abspath( os.path.join(DATASET_DIR,'wiki_test_50.tar.bz2'))
 
 def check():
@@ -54,13 +58,13 @@ def make_embeddings(infile, outfile, embedder = 'trans', trunc = None):
     sentence_bert = sbert.get(embedder)
     with files.zipped(infile) as wiki_ds:
         if trunc == None:
-            members = [m for m in wiki_ds.getmembers() if m.isfile()]
+            members = [m for m in files.zipped_members(wiki_ds) if files.is_zipped_file(m)]
         else:
-            members = [m for m in wiki_ds.getmembers()[:trunc] if m.isfile()]
+            members = [m for m in files.zipped_members(wiki_ds)[:trunc] if files.is_zipped_file(m)]
         bar = stage.ProgressBar("Embedding sentences",len(members))
         for name in members:
-            bar.update(name.name)
-            reader = wiki_ds.extractfile(name)
+            bar.update(files.zipped_name(name))
+            reader = files.open_zipped(wiki_ds,name)
             lines = [l.decode('utf-8') for l in reader.readlines()] # decode lines
             lines = [l for l in lines if not l.startswith('***')] # filter special makers
             sentences = [l for l in lines if not l.startswith('===')]
@@ -68,8 +72,8 @@ def make_embeddings(infile, outfile, embedder = 'trans', trunc = None):
             div_t = np.repeat(np.arange(len(div_i)-1),np.diff(div_i)-1)
             embeddings = sentence_bert(sentences)
             assert len(div_t) == len(embeddings), f'{len(div_t)} != {len(embeddings)}'
-            np.save(files.file(TMP_DIR+'/'+name.name+'_seg.npy','wb'),div_t)
-            np.save(files.file(TMP_DIR+'/'+name.name+'_emb.npy','wb'),embeddings)
+            np.save(files.file(TMP_DIR+'/'+files.zipped_name(name)+'_seg.npy','wb'),div_t)
+            np.save(files.file(TMP_DIR+'/'+files.zipped_name(name)+'_emb.npy','wb'),embeddings)
             #print(f'{name.name} : {div_i} : {len(sentences)} = {len(div_t)} : {embeddings.shape}')
         bar.end()
     shutil.make_archive(outfile,'zip',root_dir=TMP_DIR,base_dir='.')

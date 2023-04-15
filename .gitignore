@@ -2,6 +2,7 @@
 *.tar.bz2
 *.npz
 *.zip
+data/tmp
 
 
 # VSCode

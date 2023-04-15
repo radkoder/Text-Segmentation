@@ -79,10 +79,31 @@ def zipped(name):
 def zipped_members(fileobj):
     if utils.has_method(fileobj, 'getmembers'):
         return fileobj.getmembers()
-    if utils.has_method(fileobj, 'namelist'):
-        return fileobj.namelist()
-    elif utils.has_method(fileobj, 'getnames'):
-        return fileobj.getnames()
+    if utils.has_method(fileobj, 'infolist'):
+        return fileobj.infolist()
     else:
         raise Exception('Unknown file object type')
 
+def is_zipped_file(info):
+    if utils.has_method(info, 'isfile'):
+        return info.isfile()
+    if utils.has_method(info, 'is_dir'):
+        return not info.is_dir()
+    else:
+        raise Exception('Unknown file object type')
+    
+def zipped_name(info):
+    if type(info) is zipfile.ZipInfo:
+        return info.filename
+    if type(info) is tarfile.TarInfo:
+        return info.name
+    else:
+        raise Exception('Unknown file object type')
+    
+def open_zipped(fileobj, name):
+    if utils.has_method(fileobj, 'extractfile'):
+        return fileobj.extractfile(name)
+    if utils.has_method(fileobj, 'open'):
+        return fileobj.open(name)
+    else:
+        raise Exception('Unknown file object type')
