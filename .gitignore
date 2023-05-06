@@ -3,6 +3,7 @@
 *.npz
 *.zip
 data/tmp
+*.csv
 
 
 # VSCode
