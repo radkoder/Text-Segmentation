@@ -22,7 +22,6 @@ class EmbeddedDataset(object):
             return None
     def open(self):
         self.file = np.load(self.filename, mmap_mode='r')
-
     def close(self):
         self.file.close()
     def get_members(self):
@@ -46,3 +45,6 @@ class EmbeddedDataset(object):
 
     def get_file(self, name):
         return self.file[name+'_seg'], self.file[name+'_emb']
+    def mean_segment_length(self):
+        return np.mean(self.document_lengths()/self.segment_lengths(),dtype=int)
+            

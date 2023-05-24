@@ -36,7 +36,7 @@ def check_min(arr, idx,radius=1):
     upper = min(idx+radius+1,len(arr))
     return arr[idx] == min(arr[lower:upper])
 
-def main(emb,threshold = None, block_size = None, block_mode = 'max', whiten = False, cmp_mode ='dot', substract_mean = False, std_cutoff = 1.0, check_minimum = False, check_radius=1):
+def main(emb,threshold = None, block_size = None, block_mode = 'max', whiten = False, cmp_mode ='dot', substract_mean = False, std_cutoff = 1.0, check_minimum = True, check_radius=1):
     if block_size is None: BS = 3
     else : BS = min(block_size,len(emb)//3)
 

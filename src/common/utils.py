@@ -62,6 +62,12 @@ def grouper(iterable, n, fillval=None):
     args = [iter(iterable)]*n
     return itertools.zip_longest(*args, fillvalue=fillval)
 
+def pairwise(iterable):
+    # pairwise('ABCDEFG') --> AB BC CD DE EF FG
+    a, b = itertools.tee(iterable)
+    next(b, None)
+    return zip(a, b)
+
 def print_sizes(*args):
     '''
     args - tuples in the form (label, object)
