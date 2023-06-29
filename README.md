@@ -11,4 +11,5 @@ Implementation of the GraphSeg algorithm from (Glava et al. 2016) paper. One dif
 3. *Block Comparison* (`algorithms.block_comparison`)  
 Implementation of algorithm described in (Solbiati et al. 2021), it is an evolution of hearst original algorithm operating on vector sentence embeddings.
 This is the most parametrized model in the collection - Block encoding, Block comparison, standarization etc. are modifiable by  hiperparameters.
-
+4. *Boundary Classifier* (`algorithms.boundary_classifier`)
+Family of algorithms that, given a context of senctences around the point, is trying to predict the probability of boundary at that point. This approach is well suited for use of supervised learning algorithms, as seen in (Omri et al. 2018) which uses LSTMs to estimate the probabilities of boundaries.
