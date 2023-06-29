@@ -48,10 +48,11 @@ def main(emb,threshold = None, block_size = None, block_mode = 'max', whiten = F
     score = np.array([similarity_measure(v[i],v[i+BS],cmp_mode) for i in range(len(v)-BS)])
     t = np.mean(score) - std_cutoff*np.std(score) if threshold is None else threshold
     divs_i =  np.array([m for m in range(len(score)) if score[m] < t and (check_min(score,m,check_radius) if check_minimum else True)]) + (BS-1)
-
-    if len(divs_i) == 0:
+    print(divs_i)
+    if len(divs_i) < 3:
         '''Worst case - just take a minimal three'''
-        divs_i = np.argsort(score)[:3] + (BS-1)
+        divs_i = np.argsort(score)[:4-len(divs_i)] + (BS-1)
+    print(divs_i)
     return np.array([np.eye(1,len(emb),i) for i in divs_i],dtype=int).sum(0)[0]
 
 

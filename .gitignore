@@ -5,6 +5,8 @@
 data/tmp
 *.csv
 
+# Thesis pdf
+*.pdf
 
 # VSCode
 .vscode/

@@ -5,6 +5,7 @@ __all__ = ["wikiset"]
 import numpy as np
 from common import utils
 
+
 class EmbeddedDataset(object):
     def __init__(self, filename):
         self.filename = filename
@@ -13,13 +14,15 @@ class EmbeddedDataset(object):
         return self
     def __exit__(self,exc_type, exc_value, traceback):
         self.file.close()
-    def __getitem__(self, key):
+    def __getitem__(self, key) -> np.ndarray:
         if isinstance(key, str):
             return self.file[key]
         elif utils.has_method(key,'__getitem__'):
             return [self.file[k] for k in key]
         else:
             return None
+    def __len__(self):
+        return len(self.get_embeddings())
     def open(self):
         self.file = np.load(self.filename, mmap_mode='r')
     def close(self):
@@ -32,10 +35,10 @@ class EmbeddedDataset(object):
         return np.array([len(np.unique(self.file[m])) for m in self.get_members() if m.endswith('_seg')])
 
     def get_segments(self):
-        return [m for m in self.get_members() if m.endswith('_seg')]
+        return np.array([m for m in self.get_members() if m.endswith('_seg')])
 
     def get_embeddings(self):
-        return [m for m in self.get_members() if m.endswith('_emb')]
+        return np.array([m for m in self.get_members() if m.endswith('_emb')])
     
     def embbeding(self,seg_name):
         return seg_name[:-4]+'_emb'
